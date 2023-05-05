@@ -1,31 +1,24 @@
 # CommanDOS_x86_64
-Szmelc Commander for Windows NT OS [x86_64] support! [100% Powershell]
-# WINDOZE [SZMELC-COMMANDOS-X64] README.MD
+Szmelc Commander for Windows NT OS [x86_64] support! [100% Powershell] [1.6]
+
+<img src="https://i.imgur.com/pyqr5id.png" alt="image" width="256">
+
+## Stats
+![coverage](https://img.shields.io/badge/[x64]_amd64-100%25-green)
+![coverage](https://img.shields.io/badge/[x86]_i386-85%25-yellowgreen)
 
 ## == FEATURES ==
-### = MAIN =
 - Amelioration [Remove trash] 
-> (toggle windows update, edit registry etc)
 - Power Tools [Be Admin] 
-> (GodMode, DIY-Automation & more)
 - Optimization [4Potato] 
-> (use hard info dump to save FPS on your potato)
 - Profiling [Info Dump] 
-> (WFR, Hard Info Dump, Benchmarks, telemetry)
 - Winstall [Install stuff]
-> (Antisoft package manager, Git, curl, wget, + other package managers)
 
 ### = MISC =
 - Emulation [Emulators + ROMs]
-> (wget clean exe & ROM files from stable repos)
 - SzmelcStation Network [DRM-Free Games!]
-> [Cracked or open source games with Multiplayer for potato] \
-> [+ ALL DRM FREE STUFF I CAN GET!]
 - Official Szmelc.INC Assets [For Windows / Linux / MacOS!]
-> Simple assets to give users some copyright free / non-licensed assets & media to do whatever
-> Contains Wallpapers, Themes, Programs, Icons, Fonts + All non critical OS libraries
 - Community Assets [like flatpak]
-> Anything people customize really
 
 ### = ABOUT =
 - Szmelc.INC [Insight]
