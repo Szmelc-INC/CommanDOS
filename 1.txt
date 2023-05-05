@@ -1,0 +1,13 @@
+ ╔═══╦══════════════╗
+ ║ X ║    [MENU]    ║
+ ╠═══╬══════════════╣
+ ║ 1 ║ AME-Debloat  ║
+ ║ 2 ║ Power Tools  ║
+ ║ 3 ║ OptiFix      ║
+ ║ 4 ║ Winstall     ║
+ ║ 5 ║ Misc         ║
+ ║ = ║ ════════════ ║
+ ║ R ║ README.md    ║
+ ║ Q ║ Close [Exit] ║
+ ╚═══╩══════════════╝
+
