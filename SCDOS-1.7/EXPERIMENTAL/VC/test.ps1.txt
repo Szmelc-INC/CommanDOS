@@ -1,0 +1,6 @@
+echo "Create new powershell.ps1 Hello World script in Desktop\szmelc dir"
+
+cd $env:userprofile\Desktop
+New-Item -ItemType Directory -Name "szmelc"
+cd $env:userprofile\Desktop\szmelc
+New-Item -ItemType File -Name "NewScript.ps1" -Value "Write-Host 'Hello, World!'"

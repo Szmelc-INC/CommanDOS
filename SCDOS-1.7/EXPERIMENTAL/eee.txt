@@ -1,0 +1,39 @@
+# Check if the current version of PowerShell is 5.1 or greater
+if ($PSVersionTable.PSVersion.Major -ge 5 -and $PSVersionTable.PSVersion.Minor -ge 1) {
+    Write-Host "PowerShell 5.1 or greater is already installed."
+    Exit 0
+}
+
+# Download the PowerShell 5.1 installer from Microsoft
+$url = "https://download.microsoft.com/download/0/1/9/019EE055-6955-41E0-936A-455A9EB8C98A/Win7AndW2K8R2-KB3191566-x64.zip"
+$output = "$env:TEMP\PowerShell5.1.zip"
+$wc = New-Object System.Net.WebClient
+$wc.DownloadFile($url, $output)
+
+# Extract the contents of the zip file
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [System.IO.Compression.ZipFile]::OpenRead($output)
+$extractPath = "$env:TEMP\PowerShell5.1"
+$zip.Entries | foreach { 
+    if (!($_.Name.EndsWith('/'))) {
+        $extractFilePath = Join-Path $extractPath $_.FullName.Replace('/', '\')
+        $extractDirectory = Split-Path $extractFilePath -Parent
+        if (!(Test-Path $extractDirectory)) {
+            New-Item -ItemType Directory -Path $extractDirectory | Out-Null
+        }
+        $stream = $_.Open()
+        $fileStream = [System.IO.File]::Create($extractFilePath)
+        $stream.CopyTo($fileStream)
+        $fileStream.Close()
+        $stream.Close()
+    }
+}
+$zip.Dispose()
+
+# Install PowerShell 5.1
+$installScript = "$extractPath\Win7AndW2K8R2-KB3191566-x64.msu"
+Start-Process -FilePath wusa.exe -ArgumentList "/quiet", "/norestart", $installScript -Wait
+
+# Clean up
+Remove-Item $output -Force
+Remove-Item $extractPath -Recurse -Force
