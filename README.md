@@ -13,5 +13,14 @@ irm https://raw.githubusercontent.com/Szmelc-INC/CommanDOS/refs/heads/2.0/instal
 
 ---
 
+# Usage
+- Install/Update CommanDOS with Powershell command `install.ps1` (It will create path `C:\CommanDOS`, download contents of this repo there, and create a Desktop shortcut for `main.ps1`
+- Main script `main.ps1`, lists all configs from `menu/*.conf` to select, then opens up interactive menu from specified `.conf`
+[.conf structure]
+```conf
+Entry Name : command to execute
+Entry 2 : command2
+```
+
 # Screenshots
 ![image](https://github.com/user-attachments/assets/94c769f3-70ad-4126-837d-eae712fc8cbc)
