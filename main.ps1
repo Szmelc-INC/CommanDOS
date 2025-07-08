@@ -40,12 +40,17 @@ function Get-ConfMenu {
     $menuOptions = @()
 
     if ($confSource.Mode -eq "file") {
-        $menuOptions += @{ Label = [System.IO.Path]::GetFileNameWithoutExtension($confSource.Value) -replace '[_\-]', ' '; Path = $confSource.Value }
+        $menuOptions += @{
+            Label = [System.IO.Path]::GetFileNameWithoutExtension($confSource.Value) -replace '[_\-]', ' '
+            Path = $confSource.Value
+        }
     } else {
         $files = Get-ChildItem -Path $confSource.Value -Filter *.conf
         foreach ($file in $files) {
-            $label = $file.BaseName -replace '[_\-]', ' '
-            $menuOptions += @{ Label = $label; Path = $file.FullName }
+            $menuOptions += @{
+                Label = $file.BaseName -replace '[_\-]', ' '
+                Path = $file.FullName
+            }
         }
     }
 
@@ -53,6 +58,7 @@ function Get-ConfMenu {
     return $menuOptions
 }
 
+# ─── Draw Menu ─────────────────────────────────────────────────────
 function Draw-Menu {
     Clear-Host
     Write-Host "`n$menuTitle`n" -ForegroundColor Cyan
@@ -120,7 +126,7 @@ function Run-SubMenuFromConf($confPath) {
 
         $key = [Console]::ReadKey($true).Key
         switch ($key) {
-            'UpArrow' { if ($subSelectedIndex -gt 0) { $subSelectedIndex-- } }
+            'UpArrow'   { if ($subSelectedIndex -gt 0) { $subSelectedIndex-- } }
             'DownArrow' { if ($subSelectedIndex -lt $menuOptions.Count - 1) { $subSelectedIndex++ } }
             'Enter' {
                 $command = $menuOptions[$subSelectedIndex].Command
@@ -148,13 +154,13 @@ while ($true) {
     Draw-Menu
     $key = [Console]::ReadKey($true).Key
     switch ($key) {
-        'UpArrow' { if ($selectedIndex -gt 0) { $selectedIndex-- } }
+        'UpArrow'   { if ($selectedIndex -gt 0) { $selectedIndex-- } }
         'DownArrow' { if ($selectedIndex -lt $menuOptions.Count - 1) { $selectedIndex++ } }
         'Enter' {
             $choice = $menuOptions[$selectedIndex]
             if ($choice.Path -eq "exit") { Clear-Host; break }
             Run-SubMenuFromConf $choice.Path
-            $menuOptions = Get-ConfMenu  # refresh after submenu
+            $menuOptions = Get-ConfMenu  # refresh
         }
         'Escape' { break }
     }
