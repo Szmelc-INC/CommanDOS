@@ -1,15 +1,58 @@
-$menuTitle = "CommanDOS Loader ~ SzmelcINC"
-$menuDir = ".\menu"
-$selectedIndex = 0
+# ─── Elevate if not running as Admin ───────────────────────────────
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("Administrator")) {
+    Start-Process powershell "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" $args" -Verb RunAs
+    exit
+}
 
+# ─── Config ────────────────────────────────────────────────────────
+$menuTitle = "CommanDOS Loader ~ SzmelcINC"
+$selectedIndex = 0
+$defaultDir = ".\menu"
+$confPathArg = $args[0]
+
+# ─── Resolve Conf Source ───────────────────────────────────────────
+function Resolve-ConfDirectory {
+    if ($confPathArg) {
+        if (Test-Path $confPathArg -PathType Leaf) {
+            return @{ Mode = "file"; Value = (Resolve-Path $confPathArg).Path }
+        }
+        elseif (Test-Path $confPathArg -PathType Container) {
+            return @{ Mode = "dir"; Value = (Resolve-Path $confPathArg).Path }
+        }
+    }
+    elseif (Test-Path $defaultDir -PathType Container -and (Get-ChildItem $defaultDir -Filter *.conf)) {
+        return @{ Mode = "dir"; Value = (Resolve-Path $defaultDir).Path }
+    }
+    elseif (Get-ChildItem . -Filter *.conf) {
+        return @{ Mode = "dir"; Value = (Resolve-Path .).Path }
+    }
+    
+    while ($true) {
+        $input = Read-Host "Enter path to a .conf file or folder with .conf files"
+        if (Test-Path $input -PathType Leaf) {
+            return @{ Mode = "file"; Value = (Resolve-Path $input).Path }
+        }
+        elseif (Test-Path $input -PathType Container) {
+            return @{ Mode = "dir"; Value = (Resolve-Path $input).Path }
+        }
+        Write-Host "Invalid path. Try again." -ForegroundColor Red
+    }
+}
+
+$confSource = Resolve-ConfDirectory
+
+# ─── Generate Menu from .conf Files ────────────────────────────────
 function Get-ConfMenu {
-    $files = Get-ChildItem -Path $menuDir -Filter *.conf
     $menuOptions = @()
 
-    foreach ($file in $files) {
-        $label = $file.BaseName -replace '[_\-]', ' '
-        $fullPath = $file.FullName
-        $menuOptions += @{ Label = $label; Path = $fullPath }
+    if ($confSource.Mode -eq "file") {
+        $menuOptions += @{ Label = [System.IO.Path]::GetFileNameWithoutExtension($confSource.Value) -replace '[_\-]', ' '; Path = $confSource.Value }
+    } else {
+        $files = Get-ChildItem -Path $confSource.Value -Filter *.conf
+        foreach ($file in $files) {
+            $label = $file.BaseName -replace '[_\-]', ' '
+            $menuOptions += @{ Label = $label; Path = $file.FullName }
+        }
     }
 
     $menuOptions += @{ Label = "Exit"; Path = "exit" }
@@ -30,6 +73,7 @@ function Draw-Menu {
     }
 }
 
+# ─── Run Submenu from Selected .conf File ──────────────────────────
 function Run-SubMenuFromConf($confPath) {
     $menuOptions = @()
     $lines = Get-Content $confPath | Where-Object { $_ -match "\s*:\s*" }
@@ -102,7 +146,7 @@ function Run-SubMenuFromConf($confPath) {
     }
 }
 
-# Main loop
+# ─── Main Menu Loop ────────────────────────────────────────────────
 $menuOptions = Get-ConfMenu
 [Console]::CursorVisible = $false
 
@@ -116,7 +160,7 @@ while ($true) {
             $choice = $menuOptions[$selectedIndex]
             if ($choice.Path -eq "exit") { Clear-Host; break }
             Run-SubMenuFromConf $choice.Path
-            $menuOptions = Get-ConfMenu  # Reload in case of changes
+            $menuOptions = Get-ConfMenu  # refresh after submenu
         }
         'Escape' { break }
     }
