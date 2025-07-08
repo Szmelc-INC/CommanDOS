@@ -7,18 +7,25 @@ if (-not (Test-Path $confFile)) {
     exit 1
 }
 
-$lines = Get-Content $confFile | Where-Object { $_ -match "\s*:\s*" }
+# Load and filter lines with valid command entries
+$rawLines = Get-Content $confFile
+$lines = @()
+foreach ($line in $rawLines) {
+    if ($line -match "^\s*#") { $lines += $line; continue }
+    if ($line -match "\s*:\s*") { $lines += $line }
+    else { $lines += $line }
+}
 
 function Get-TestCommand {
     param($cmd)
-    $cmd -replace '\$p', '"C:\TestFolder"' `
-         -replace '\$path', '"C:\TestFolder"' `
-         -replace '\$user', '"Everyone"' `
-         -replace '\$u', '"Everyone"' `
-         -replace '\$exe', '"notepad.exe"' `
-         -replace '\$v', '"01 00 00 00"' `
-         -replace '\$id', '"{00000000-0000-0000-0000-000000000000}"' `
-         -replace '\$n', '"TestVar"'
+    return $cmd -replace '\$p', '"C:\TestFolder"' `
+                 -replace '\$path', '"C:\TestFolder"' `
+                 -replace '\$user', '"Everyone"' `
+                 -replace '\$u', '"Everyone"' `
+                 -replace '\$exe', '"notepad.exe"' `
+                 -replace '\$v', '"01 00 00 00"' `
+                 -replace '\$id', '"{00000000-0000-0000-0000-000000000000}"' `
+                 -replace '\$n', '"TestVar"'
 }
 
 function Try-RunCommand {
@@ -26,43 +33,56 @@ function Try-RunCommand {
     try {
         Write-Host "`n[▶] Executing test: $testCommand" -ForegroundColor Yellow
         Invoke-Expression $testCommand
-    }
-    catch {
+    } catch {
         Write-Host "`n[!] Error: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
 function OfferFix {
     param($line, $index)
-    $fixed = $line -replace 'powershell\s+-Command\s+"?', ''
-    $fixed = $fixed -replace '"$', ''
-    if ($fixed -ne $line) {
-        $lines[$index] = $fixed
-        Write-Host "[✔] Fixed line automatically." -ForegroundColor Green
+    $original = $line
+    $parts = $line -split "\s*:\s*", 2
+    if ($parts.Count -ne 2) { return }
+    $label = $parts[0].Trim()
+    $command = $parts[1].Trim()
+
+    # Remove unnecessary powershell -Command wrappers
+    $command = $command -replace '^powershell\s+-Command\s+[\'"]?', ''
+    $command = $command -replace '[\'"]?$', ''
+
+    $fixedLine = "$label : $command"
+    if ($fixedLine -ne $original) {
+        $script:lines[$index] = $fixedLine
+        Write-Host "[✔] Fixed line." -ForegroundColor Green
     } else {
-        Write-Host "[i] No fix available." -ForegroundColor DarkGray
+        Write-Host "[i] No fix needed." -ForegroundColor DarkGray
     }
 }
 
 function CopyAndOpen {
     param($command)
     Set-Clipboard -Value $command
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", $command
+    $bytes = [System.Text.Encoding]::Unicode.GetBytes($command)
+    $encoded = [Convert]::ToBase64String($bytes)
+    Start-Process powershell -ArgumentList "-NoExit", "-EncodedCommand", $encoded
     Write-Host "[✔] Opened in new PowerShell window." -ForegroundColor Cyan
 }
 
 # Main loop
 for ($i = 0; $i -lt $lines.Count; $i++) {
     $line = $lines[$i]
+    if ($line.Trim() -eq "" -or $line -notmatch "\s*:\s*") { continue }
+
     $parts = $line -split "\s*:\s*", 2
+    if ($parts.Count -ne 2) { continue }
+
     $label = $parts[0].Trim()
     $command = $parts[1].Trim()
+    $testCommand = Get-TestCommand $command
 
     Write-Host "`n─────────────" -ForegroundColor Gray
     Write-Host "[#] $label" -ForegroundColor Cyan
     Write-Host "[~] Raw: $command" -ForegroundColor DarkGray
-
-    $testCommand = Get-TestCommand $command
 
     Write-Host "[?] Options:"
     Write-Host "  [T] Test command"
@@ -84,8 +104,8 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
     }
 }
 
-# Ask to save any fixes
-if ($lines -ne (Get-Content $confFile)) {
+# Save file if changed
+if ($lines -join "`n" -ne ($rawLines -join "`n")) {
     $save = Read-Host "`nSave changes to $confFile? (y/n)"
     if ($save -eq "y") {
         $lines | Set-Content $confFile -Encoding UTF8
