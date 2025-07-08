@@ -1,3 +1,5 @@
+# CommanDOS Installer Script by SzmelcINC
+
 # ───── Setup ────────────────────────────────────────────────────────
 $destPath = "C:\CommanDOS"
 $zipUrl = "https://github.com/Szmelc-INC/CommanDOS/archive/refs/heads/2.0.zip"
@@ -23,7 +25,7 @@ function Get-Status {
 # ───── Draw Interactive Menu ────────────────────────────────────────
 function Show-Menu {
     Write-Host "`n==== CommanDOS Setup ====" -ForegroundColor Cyan
-    Write-Host (Get-Status()) -ForegroundColor Yellow
+    Write-Host "$(Get-Status)" -ForegroundColor Yellow
     Write-Host "`n1. Install / Update"
     Write-Host "2. Uninstall"
     Write-Host "3. Help"
@@ -44,15 +46,16 @@ function Create-Shortcut {
     $shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
     $shortcut.Save()
 
-    # Mark shortcut to run as administrator
+    # Enable "Run as Administrator" on the shortcut
     $bytes = [System.IO.File]::ReadAllBytes($desktopShortcut)
-    if ($bytes[0x15] -ne 0x22) { $bytes[0x15] = 0x22; [System.IO.File]::WriteAllBytes($desktopShortcut, $bytes) }
+    $bytes[0x15] = 0x22
+    [System.IO.File]::WriteAllBytes($desktopShortcut, $bytes)
 }
 
 # ───── Install or Update ────────────────────────────────────────────
 function Install-Or-Update {
     if (Test-Path $destPath) {
-        $yn = Read-Host "CommanDOS already installed. Create backup before update? [y/N]"
+        $yn = Read-Host "CommanDOS is already installed. Backup before update? [y/N]"
         if ($yn -match '^(y|Y)$') {
             Copy-Item $destPath $backupPath -Recurse -Force
             Write-Host "🔁 Backup created at: $backupPath" -ForegroundColor DarkGray
@@ -78,7 +81,7 @@ function Install-Or-Update {
     Write-Host "🧷 Creating desktop shortcut..."
     Create-Shortcut
 
-    Write-Host "`n✅ CommanDOS installed at C:\CommanDOS"
+    Write-Host "`n✅ CommanDOS installed to C:\CommanDOS"
     Write-Host "📎 Shortcut added to Desktop.`n"
 }
 
