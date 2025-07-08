@@ -1,7 +1,11 @@
 # CommanDOS [v1.3]
 > ***A Power User Toolkit 4 Powershell by Szmelc*** \
+> ***- CommanDOS*** is an interactive CLI/TUI tool for Windows users, created in PowerShell by Szmelc.INC. \
+It allows you to create your own operating menus based on .conf files, which allow you to launch various programs, commands or administrative tools with a single click. \
 > Szmelc Commander 2.0 for Windows (XP,7,10,11) [x86_64] \
 ![coverage](https://img.shields.io/badge/[Core]-49%25-green)
+
+---
 
 ```
                                                            __             
