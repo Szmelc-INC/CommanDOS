@@ -1,23 +1,28 @@
 # ─── Validate.ps1 — CommanDOS Conf Validator ────────────────────────
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $defaultConfDir = "C:\CommanDOS\menu"
+$logFile = "validator-log.txt"
+Start-Transcript -Path $logFile -Append | Out-Null
+
+Write-Host "`n🔧 CommanDOS Conf Validator v1.2 — by Szmelc.INC" -ForegroundColor Cyan
 
 # ─── Choose .conf file ──────────────────────────────────────────────
 function Pick-ConfFile {
-    if (Test-Path $defaultConfDir -and (Get-ChildItem "$defaultConfDir\*.conf")) {
+    if (Test-Path $defaultConfDir -and (Get-ChildItem "$defaultConfDir\*.conf" -ErrorAction SilentlyContinue)) {
         Write-Host "`n📁 Found .conf files in $defaultConfDir:" -ForegroundColor Cyan
         $files = Get-ChildItem "$defaultConfDir\*.conf"
         for ($i = 0; $i -lt $files.Count; $i++) {
             Write-Host "  [$i] $($files[$i].Name)"
         }
-        $sel = Read-Host "Select index [0-$($files.Count-1)]"
+
+        $sel = Read-Host "Select index [0-$($files.Count-1)] or press Enter to skip"
         if ($sel -match '^\d+$' -and $sel -lt $files.Count) {
             return $files[$sel].FullName
         }
     }
 
     while ($true) {
-        $path = Read-Host "Enter path to a .conf file"
+        $path = Read-Host "Enter full path to a .conf file"
         if (Test-Path $path -and $path -like "*.conf") {
             return (Resolve-Path $path).Path
         } else {
@@ -27,6 +32,21 @@ function Pick-ConfFile {
 }
 
 $confFile = Pick-ConfFile
+Write-Host "`n📄 Selected config file: $confFile" -ForegroundColor Green
+
+# ─── Ask what to do ─────────────────────────────────────────────────
+Write-Host "`nWhat would you like to do with this file?"
+Write-Host "  [V] Validate & offer fixes"
+Write-Host "  [O] Open raw in notepad"
+Write-Host "  [X] Exit"
+
+$action = Read-Host "Choose action (V/O/X)"
+switch ($action.ToUpper()) {
+    "O" { notepad $confFile; Stop-Transcript; exit 0 }
+    "X" { Write-Host "Aborted." -ForegroundColor Red; Stop-Transcript; exit 0 }
+    "V" { Write-Host "`n🔍 Starting validation..." -ForegroundColor Yellow }
+    default { Write-Host "❌ Invalid input. Exiting." -ForegroundColor Red; Stop-Transcript; exit 1 }
+}
 
 # ─── Load Lines ─────────────────────────────────────────────────────
 $rawLines = Get-Content $confFile
@@ -68,11 +88,10 @@ function OfferFix {
     $label = $parts[0].Trim()
     $command = $parts[1].Trim()
 
-    # Strip wrapper
     $command = $command -replace '^powershell\s+-Command\s+[\'"]?', ''
     $command = $command -replace '[\'"]?$', ''
-
     $fixedLine = "$label : $command"
+
     if ($fixedLine -ne $original) {
         $script:lines[$index] = $fixedLine
         Write-Host "[✔] Fixed line." -ForegroundColor Green
@@ -120,7 +139,7 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
             "F" { OfferFix $line $i; break }
             "C" { CopyAndOpen $testCommand; break }
             "S" { break }
-            "X" { Write-Host "Aborted." -ForegroundColor Red; exit 0 }
+            "X" { Write-Host "Aborted." -ForegroundColor Red; Stop-Transcript; exit 0 }
             default { Write-Host "Invalid choice." -ForegroundColor DarkRed }
         }
     }
@@ -136,3 +155,7 @@ if ($lines -join "`n" -ne ($rawLines -join "`n")) {
         Write-Host "[i] Discarded changes." -ForegroundColor Yellow
     }
 }
+
+# ─── End ────────────────────────────────────────────────────────────
+Stop-Transcript
+Pause
