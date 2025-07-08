@@ -1,29 +1,17 @@
-# CommanDOS_x86_64
-> Szmelc Commander for Windows OS (XP,7,10,11) [x86_64]
+# CommanDOS 2.0
+> Szmelc Commander for Windows (XP,7,10,11) [x86_64] \
+![coverage](https://img.shields.io/badge/[Core]-49%25-green)
 
-![image](https://github.com/user-attachments/assets/a33134f4-5ebc-4aba-b62a-21904e3853a3)
+---
 
-### Old screenshots
-<img src="https://i.imgur.com/pyqr5id.png" alt="image" width="256">
+# Setup
+## Installation:
+Copy & paste into powershell:
+```ps1
+irm https://raw.githubusercontent.com/Szmelc-INC/CommanDOS/refs/heads/2.0/install.ps1 | iex
+```
 
-## Stats
-![coverage](https://img.shields.io/badge/[x64]_amd64-100%25-green)
-![coverage](https://img.shields.io/badge/[x86]_i386-85%25-yellowgreen)
+---
 
-## == FEATURES ==
-- Amelioration [Remove trash] 
-- Power Tools [Be Admin] 
-- Optimization [4Potato] 
-- Profiling [Info Dump] 
-- Winstall [Install stuff]
-
-### = MISC =
-- Emulation [Emulators + ROMs]
-- SzmelcStation Network [DRM-Free Games!]
-- Official Szmelc.INC Assets [For Windows / Linux / MacOS!]
-- Community Assets [like flatpak]
-
-### = ABOUT =
-- Szmelc.INC [Insight]
-- Szmelc-CommanDOS [SC64-NT]
-- Our Media [Links & More]
+# Screenshots
+![image](https://github.com/user-attachments/assets/94c769f3-70ad-4126-837d-eae712fc8cbc)
