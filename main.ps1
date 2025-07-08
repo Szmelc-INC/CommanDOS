@@ -1,12 +1,3 @@
-# Enforce Admin
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("Administrator")) {
-    Write-Host "`n[!] Please run this script as Administrator!" -ForegroundColor Red
-    Write-Host "    Right-click > Run with PowerShell" -ForegroundColor Yellow
-    Write-Host "    OR use: powershell -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"`n"
-    Pause
-    exit
-}
-
 # ─── Config ────────────────────────────────────────────────────────
 $menuTitle = "- [CommanDOS Loader]"
 $selectedIndex = 0
