@@ -1,4 +1,4 @@
-# CommanDOS Installer Script by SzmelcINC
+# CommanDOS Installer Script by Szmelc.INC
 
 # ───── Setup ────────────────────────────────────────────────────────
 $destPath = "C:\CommanDOS"
@@ -33,10 +33,11 @@ function Show-Menu {
     Write-Host "4. Run as Portable"
     Write-Host "5. Check For Updates"
     Write-Host "6. Start CommanDOS"
+    Write-Host "7. Run Command Validator"
     Write-Host "0. Exit`n"
     do {
-        $choice = Read-Host "Select an option [0-6]"
-    } while ($choice -notmatch '^[0-6]$')
+        $choice = Read-Host "Select an option [0-7]"
+    } while ($choice -notmatch '^[0-7]$')
     return $choice
 }
 
@@ -143,6 +144,16 @@ function Start-CommanDOS {
     }
 }
 
+# ───── Run Validator (validate.ps1) ─────────────────────────────────
+function Run-Validator {
+    $validator = Join-Path $destPath "validate.ps1"
+    if (Test-Path $validator) {
+        Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$validator`"" -Verb RunAs
+    } else {
+        Write-Host "❌ validate.ps1 not found in $destPath" -ForegroundColor Red
+    }
+}
+
 # ───── Uninstall ────────────────────────────────────────────────────
 function Uninstall-CommanDOS {
     if (Test-Path $destPath) {
@@ -160,7 +171,7 @@ function Show-Help {
     Start-Process "https://github.com/Szmelc-INC/CommanDOS"
 }
 
-# ───── Main Logic ───────────────────────────────────────────────────
+# ───── Main Menu Loop ───────────────────────────────────────────────
 while ($true) {
     switch (Show-Menu) {
         '1' { Install-Or-Update }
@@ -169,6 +180,7 @@ while ($true) {
         '4' { Run-Portable }
         '5' { Check-For-Updates }
         '6' { Start-CommanDOS }
+        '7' { Run-Validator }
         '0' { Write-Host "`n👋 Exiting..."; Start-Sleep 1; exit }
     }
     Write-Host "`nPress any key to return to menu..." -ForegroundColor Gray
