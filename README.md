@@ -1,12 +1,12 @@
-# CommanDOS 2.0
-> Szmelc Commander for Windows (XP,7,10,11) [x86_64] \
+# CommanDOS [v1.2]
+> Szmelc Commander 2.0 for Windows (XP,7,10,11) [x86_64] \
 ![coverage](https://img.shields.io/badge/[Core]-49%25-green)
 
 ---
 
 # Setup
 ## Installation / Update:
-Copy & paste into powershell:
+Copy & paste into Powershell (as Administrator):
 ```ps1
 irm https://raw.githubusercontent.com/Szmelc-INC/CommanDOS/refs/heads/2.0/install.ps1 | iex
 ```
@@ -35,4 +35,6 @@ Control Panel : Start-Process control
 ```
 
 # Screenshots
+![image](https://github.com/user-attachments/assets/c0268137-93b0-4a11-be30-89e302873dad)
+
 ![image](https://github.com/user-attachments/assets/94c769f3-70ad-4126-837d-eae712fc8cbc)
