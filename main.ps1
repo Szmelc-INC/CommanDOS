@@ -1,5 +1,5 @@
 # ─── Config ────────────────────────────────────────────────────────
-$menuTitle = "- [CommanDOS Loader]"
+$menuTitle = "- [CommanDOS Loader] [v1.1]"
 $selectedIndex = 0
 $defaultDir = "C:\CommanDOS\menu"
 $confPathArg = $args[0]
@@ -14,13 +14,13 @@ function Resolve-ConfDirectory {
             return @{ Mode = "dir"; Value = (Resolve-Path $confPathArg).Path }
         }
     }
-    elseif (Test-Path $defaultDir -PathType Container -and (Get-ChildItem $defaultDir -Filter *.conf)) {
+    elseif ((Test-Path $defaultDir -PathType Container) -and (Get-ChildItem $defaultDir -Filter *.conf)) {
         return @{ Mode = "dir"; Value = (Resolve-Path $defaultDir).Path }
     }
     elseif (Get-ChildItem . -Filter *.conf) {
         return @{ Mode = "dir"; Value = (Resolve-Path .).Path }
     }
-    
+
     while ($true) {
         $input = Read-Host "Enter path to a .conf file or folder with .conf files"
         if (Test-Path $input -PathType Leaf) {
