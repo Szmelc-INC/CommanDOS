@@ -1,8 +1,22 @@
 # ─── Config ────────────────────────────────────────────────────────
-$menuTitle = "- [CommanDOS Loader] [v1.1]"
+$menuTitle = "- [CommanDOS] [v1.2]"
 $selectedIndex = 0
 $defaultDir = "C:\CommanDOS\menu"
 $confPathArg = $args[0]
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$logoFile = Join-Path $scriptDir "logo.txt"
+
+# ─── Load Logo (if exists) ─────────────────────────────────────────
+function Show-Logo {
+    if (Test-Path $logoFile) {
+        $logo = Get-Content $logoFile
+        foreach ($line in $logo) {
+            $pad = [Math]::Max(0, ([Console]::WindowWidth - $line.Length) / 2)
+            Write-Host ($line.PadLeft($line.Length + $pad)) -ForegroundColor DarkCyan
+        }
+        Write-Host ""
+    }
+}
 
 # ─── Resolve Conf Source ───────────────────────────────────────────
 function Resolve-ConfDirectory {
@@ -61,6 +75,7 @@ function Get-ConfMenu {
 # ─── Draw Menu ─────────────────────────────────────────────────────
 function Draw-Menu {
     Clear-Host
+    Show-Logo
     Write-Host "`n$menuTitle`n" -ForegroundColor Cyan
     for ($i = 0; $i -lt $menuOptions.Count; $i++) {
         if ($i -eq $selectedIndex) {
