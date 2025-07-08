@@ -1,13 +1,34 @@
-param (
-    [string]$confFile = $(Read-Host "Enter path to .conf file")
-)
+# ─── Validate.ps1 — CommanDOS Conf Validator ────────────────────────
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$defaultConfDir = "C:\CommanDOS\menu"
 
-if (-not (Test-Path $confFile)) {
-    Write-Error "❌ File not found: $confFile"
-    exit 1
+# ─── Choose .conf file ──────────────────────────────────────────────
+function Pick-ConfFile {
+    if (Test-Path $defaultConfDir -and (Get-ChildItem "$defaultConfDir\*.conf")) {
+        Write-Host "`n📁 Found .conf files in $defaultConfDir:" -ForegroundColor Cyan
+        $files = Get-ChildItem "$defaultConfDir\*.conf"
+        for ($i = 0; $i -lt $files.Count; $i++) {
+            Write-Host "  [$i] $($files[$i].Name)"
+        }
+        $sel = Read-Host "Select index [0-$($files.Count-1)]"
+        if ($sel -match '^\d+$' -and $sel -lt $files.Count) {
+            return $files[$sel].FullName
+        }
+    }
+
+    while ($true) {
+        $path = Read-Host "Enter path to a .conf file"
+        if (Test-Path $path -and $path -like "*.conf") {
+            return (Resolve-Path $path).Path
+        } else {
+            Write-Host "❌ Invalid path or not a .conf file." -ForegroundColor Red
+        }
+    }
 }
 
-# Load and filter lines with valid command entries
+$confFile = Pick-ConfFile
+
+# ─── Load Lines ─────────────────────────────────────────────────────
 $rawLines = Get-Content $confFile
 $lines = @()
 foreach ($line in $rawLines) {
@@ -16,6 +37,7 @@ foreach ($line in $rawLines) {
     else { $lines += $line }
 }
 
+# ─── Utilities ──────────────────────────────────────────────────────
 function Get-TestCommand {
     param($cmd)
     return $cmd -replace '\$p', '"C:\TestFolder"' `
@@ -46,7 +68,7 @@ function OfferFix {
     $label = $parts[0].Trim()
     $command = $parts[1].Trim()
 
-    # Remove unnecessary powershell -Command wrappers
+    # Strip wrapper
     $command = $command -replace '^powershell\s+-Command\s+[\'"]?', ''
     $command = $command -replace '[\'"]?$', ''
 
@@ -68,7 +90,7 @@ function CopyAndOpen {
     Write-Host "[✔] Opened in new PowerShell window." -ForegroundColor Cyan
 }
 
-# Main loop
+# ─── Main Loop ──────────────────────────────────────────────────────
 for ($i = 0; $i -lt $lines.Count; $i++) {
     $line = $lines[$i]
     if ($line.Trim() -eq "" -or $line -notmatch "\s*:\s*") { continue }
@@ -104,7 +126,7 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
     }
 }
 
-# Save file if changed
+# ─── Save if Changed ────────────────────────────────────────────────
 if ($lines -join "`n" -ne ($rawLines -join "`n")) {
     $save = Read-Host "`nSave changes to $confFile? (y/n)"
     if ($save -eq "y") {
