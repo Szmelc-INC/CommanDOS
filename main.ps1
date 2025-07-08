@@ -1,13 +1,16 @@
-# ─── Elevate if not running as Admin ───────────────────────────────
+# Enforce Admin
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("Administrator")) {
-    Start-Process powershell "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" $args" -Verb RunAs
+    Write-Host "`n[!] Please run this script as Administrator!" -ForegroundColor Red
+    Write-Host "    Right-click > Run with PowerShell" -ForegroundColor Yellow
+    Write-Host "    OR use: powershell -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"`n"
+    Pause
     exit
 }
 
 # ─── Config ────────────────────────────────────────────────────────
-$menuTitle = "CommanDOS Loader ~ SzmelcINC"
+$menuTitle = "- [CommanDOS Loader]"
 $selectedIndex = 0
-$defaultDir = ".\menu"
+$defaultDir = "C:\CommanDOS\menu"
 $confPathArg = $args[0]
 
 # ─── Resolve Conf Source ───────────────────────────────────────────
