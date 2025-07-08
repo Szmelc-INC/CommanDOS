@@ -4,8 +4,11 @@ $zipUrl = "https://github.com/Szmelc-INC/CommanDOS/archive/refs/heads/2.0.zip"
 $zipFile = "$env:TEMP\CommanDOS.zip"
 $desktopShortcut = "$([Environment]::GetFolderPath('Desktop'))\CommanDOS.lnk"
 
-# 1. Create folder
-if (-Not (Test-Path $destPath)) {
+# 1. Prepare destination folder
+if (Test-Path $destPath) {
+    Write-Host "🧹 Clearing existing CommanDOS folder..."
+    Remove-Item "$destPath\*" -Recurse -Force -ErrorAction SilentlyContinue
+} else {
     New-Item -ItemType Directory -Path $destPath | Out-Null
 }
 
