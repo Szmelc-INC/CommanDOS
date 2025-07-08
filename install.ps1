@@ -1,4 +1,4 @@
-# CommanDOS Installer Script by Szmelc.INC
+# CommanDOS Installer Script by SzmelcINC
 
 # ───── Setup ────────────────────────────────────────────────────────
 $destPath = "C:\CommanDOS"
@@ -15,7 +15,7 @@ function Get-Status {
         $status = "[STATUS] ✅ CommanDOS is installed"
         if (Test-Path $readmePath) {
             $firstLine = Get-Content $readmePath -TotalCount 1
-            $status += " → `"$firstLine`""
+            $status += " → "$firstLine""
         }
     } else {
         $status = "[STATUS] ❌ CommanDOS is not installed"
@@ -25,19 +25,18 @@ function Get-Status {
 
 # ───── Draw Interactive Menu ────────────────────────────────────────
 function Show-Menu {
-    Write-Host "`n==== CommanDOS Setup ====" -ForegroundColor Cyan
+    Write-Host "n==== CommanDOS Setup ====" -ForegroundColor Cyan
     Write-Host "$(Get-Status)" -ForegroundColor Yellow
-    Write-Host "`n1. Install / Update"
+    Write-Host "n1. Install / Update"
     Write-Host "2. Uninstall"
     Write-Host "3. Help"
     Write-Host "4. Run as Portable"
     Write-Host "5. Check For Updates"
     Write-Host "6. Start CommanDOS"
-    Write-Host "7. Run Command Validator"
-    Write-Host "0. Exit`n"
+    Write-Host "0. Exitn"
     do {
-        $choice = Read-Host "Select an option [0-7]"
-    } while ($choice -notmatch '^[0-7]$')
+        $choice = Read-Host "Select an option [0-6]"
+    } while ($choice -notmatch '^[0-6]$')
     return $choice
 }
 
@@ -46,7 +45,7 @@ function Create-Shortcut {
     $WshShell = New-Object -ComObject WScript.Shell
     $shortcut = $WshShell.CreateShortcut($desktopShortcut)
     $shortcut.TargetPath = "powershell.exe"
-    $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$destPath\main.ps1`""
+    $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File "$destPath\main.ps1""
     $shortcut.WorkingDirectory = $destPath
     $shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
     $shortcut.Save()
@@ -69,7 +68,7 @@ function Install-Or-Update {
         New-Item -ItemType Directory -Path $destPath | Out-Null
     }
 
-    Write-Host "`n⬇️  Downloading CommanDOS from GitHub..."
+    Write-Host "n⬇️  Downloading CommanDOS from GitHub..."
     Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
 
     Write-Host "📦 Extracting..."
@@ -83,8 +82,8 @@ function Install-Or-Update {
     Write-Host "🧷 Creating desktop shortcut..."
     Create-Shortcut
 
-    Write-Host "`n✅ CommanDOS installed to C:\CommanDOS"
-    Write-Host "📎 Shortcut added to Desktop.`n"
+    Write-Host "n✅ CommanDOS installed to C:\CommanDOS"
+    Write-Host "📎 Shortcut added to Desktop.n"
 }
 
 # ───── Run Portable ─────────────────────────────────────────────────
@@ -95,7 +94,7 @@ function Run-Portable {
     Remove-Item $zipFile -Force
     $portableMain = Join-Path "$tempExtractPath\CommanDOS-2.0" "main.ps1"
     Write-Host "🚀 Running Portable CommanDOS..."
-    Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$portableMain`"" -Verb RunAs
+    Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File "$portableMain"" -Verb RunAs
 }
 
 # ───── Check for Updates ────────────────────────────────────────────
@@ -112,7 +111,7 @@ function Check-For-Updates {
     $newFiles = Get-ChildItem "$tempExtractPath\CommanDOS-2.0" -Recurse
     $oldFiles = Get-ChildItem $destPath -Recurse
 
-    Write-Host "`n📊 Comparing installed files with latest version..."
+    Write-Host "n📊 Comparing installed files with latest version..."
     foreach ($file in $newFiles) {
         $relativePath = $file.FullName.Replace("$tempExtractPath\CommanDOS-2.0\", "")
         $oldFilePath = Join-Path $destPath $relativePath
@@ -131,26 +130,16 @@ function Check-For-Updates {
     }
 
     Remove-Item $tempExtractPath -Recurse -Force
-    Write-Host "`n✅ Update check complete."
+    Write-Host "n✅ Update check complete."
 }
 
 # ───── Start CommanDOS ──────────────────────────────────────────────
 function Start-CommanDOS {
     $mainScript = Join-Path $destPath "main.ps1"
     if (Test-Path $mainScript) {
-        Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$mainScript`"" -Verb RunAs
+        Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File "$mainScript"" -Verb RunAs
     } else {
         Write-Host "❌ main.ps1 not found in $destPath" -ForegroundColor Red
-    }
-}
-
-# ───── Run Validator (validate.ps1) ─────────────────────────────────
-function Run-Validator {
-    $validator = Join-Path $destPath "validate.ps1"
-    if (Test-Path $validator) {
-        Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$validator`"" -Verb RunAs
-    } else {
-        Write-Host "❌ validate.ps1 not found in $destPath" -ForegroundColor Red
     }
 }
 
@@ -171,7 +160,7 @@ function Show-Help {
     Start-Process "https://github.com/Szmelc-INC/CommanDOS"
 }
 
-# ───── Main Menu Loop ───────────────────────────────────────────────
+# ───── Main Logic ───────────────────────────────────────────────────
 while ($true) {
     switch (Show-Menu) {
         '1' { Install-Or-Update }
@@ -180,9 +169,8 @@ while ($true) {
         '4' { Run-Portable }
         '5' { Check-For-Updates }
         '6' { Start-CommanDOS }
-        '7' { Run-Validator }
-        '0' { Write-Host "`n👋 Exiting..."; Start-Sleep 1; exit }
+        '0' { Write-Host "n👋 Exiting..."; Start-Sleep 1; exit }
     }
-    Write-Host "`nPress any key to return to menu..." -ForegroundColor Gray
+    Write-Host "nPress any key to return to menu..." -ForegroundColor Gray
     [Console]::ReadKey($true) | Out-Null
 }
