@@ -5,7 +5,7 @@
 ---
 
 # Setup
-## Installation:
+## Installation / Update:
 Copy & paste into powershell:
 ```ps1
 irm https://raw.githubusercontent.com/Szmelc-INC/CommanDOS/refs/heads/2.0/install.ps1 | iex
@@ -16,10 +16,22 @@ irm https://raw.githubusercontent.com/Szmelc-INC/CommanDOS/refs/heads/2.0/instal
 # Usage
 - Install/Update CommanDOS with Powershell command `install.ps1` (It will create path `C:\CommanDOS`, download contents of this repo there, and create a Desktop shortcut for `main.ps1`
 - Main script `main.ps1`, lists all configs from `menu/*.conf` to select, then opens up interactive menu from specified `.conf`
-[.conf structure]
+
+### [.conf]
+`.conf` structure
 ```conf
 Entry Name : command to execute
 Entry 2 : command2
+```
+Example `.conf`
+```conf
+Open Command Prompt : start cmd
+Open PowerShell : start powershell
+System Information : systeminfo | more
+Task Manager : Start-Process taskmgr
+Device Manager : Start-Process devmgmt.msc
+Network Connections : Start-Process ncpa.cpl
+Control Panel : Start-Process control
 ```
 
 # Screenshots
