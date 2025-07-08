@@ -7,6 +7,7 @@ $zipFile = "$env:TEMP\CommanDOS.zip"
 $desktopShortcut = "$([Environment]::GetFolderPath('Desktop'))\CommanDOS.lnk"
 $readmePath = Join-Path $destPath "README.md"
 $backupPath = "$env:TEMP\CommanDOS_BACKUP_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+$tempExtractPath = "$env:TEMP\CommanDOS_TMP_$(Get-Random)"
 
 # ───── Detect Status ────────────────────────────────────────────────
 function Get-Status {
@@ -29,10 +30,13 @@ function Show-Menu {
     Write-Host "`n1. Install / Update"
     Write-Host "2. Uninstall"
     Write-Host "3. Help"
+    Write-Host "4. Run as Portable"
+    Write-Host "5. Check For Updates"
+    Write-Host "6. Start CommanDOS"
     Write-Host "0. Exit`n"
     do {
-        $choice = Read-Host "Select an option [0-3]"
-    } while ($choice -notmatch '^[0-3]$')
+        $choice = Read-Host "Select an option [0-6]"
+    } while ($choice -notmatch '^[0-6]$')
     return $choice
 }
 
@@ -45,8 +49,6 @@ function Create-Shortcut {
     $shortcut.WorkingDirectory = $destPath
     $shortcut.IconLocation = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
     $shortcut.Save()
-
-    # Enable "Run as Administrator" on the shortcut
     $bytes = [System.IO.File]::ReadAllBytes($desktopShortcut)
     $bytes[0x15] = 0x22
     [System.IO.File]::WriteAllBytes($desktopShortcut, $bytes)
@@ -60,7 +62,6 @@ function Install-Or-Update {
             Copy-Item $destPath $backupPath -Recurse -Force
             Write-Host "🔁 Backup created at: $backupPath" -ForegroundColor DarkGray
         }
-
         Write-Host "🧹 Clearing existing CommanDOS folder..."
         Remove-Item "$destPath\*" -Recurse -Force -ErrorAction SilentlyContinue
     } else {
@@ -83,6 +84,63 @@ function Install-Or-Update {
 
     Write-Host "`n✅ CommanDOS installed to C:\CommanDOS"
     Write-Host "📎 Shortcut added to Desktop.`n"
+}
+
+# ───── Run Portable ─────────────────────────────────────────────────
+function Run-Portable {
+    Write-Host "📥 Downloading temporary copy..."
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
+    Expand-Archive -Path $zipFile -DestinationPath $tempExtractPath -Force
+    Remove-Item $zipFile -Force
+    $portableMain = Join-Path "$tempExtractPath\CommanDOS-2.0" "main.ps1"
+    Write-Host "🚀 Running Portable CommanDOS..."
+    Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$portableMain`"" -Verb RunAs
+}
+
+# ───── Check for Updates ────────────────────────────────────────────
+function Check-For-Updates {
+    if (-not (Test-Path $destPath)) {
+        Write-Host "⚠️ CommanDOS is not installed." -ForegroundColor Red
+        return
+    }
+
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
+    Expand-Archive -Path $zipFile -DestinationPath $tempExtractPath -Force
+    Remove-Item $zipFile -Force
+
+    $newFiles = Get-ChildItem "$tempExtractPath\CommanDOS-2.0" -Recurse
+    $oldFiles = Get-ChildItem $destPath -Recurse
+
+    Write-Host "`n📊 Comparing installed files with latest version..."
+    foreach ($file in $newFiles) {
+        $relativePath = $file.FullName.Replace("$tempExtractPath\CommanDOS-2.0\", "")
+        $oldFilePath = Join-Path $destPath $relativePath
+
+        if (!(Test-Path $oldFilePath)) {
+            Write-Host "🆕 New: $relativePath" -ForegroundColor Green
+        } elseif ((Get-FileHash $file.FullName).Hash -ne (Get-FileHash $oldFilePath).Hash) {
+            Write-Host "✏️  Modified: $relativePath" -ForegroundColor Yellow
+            $action = Read-Host "→ Replace, keep old or merge? [r/k/m]"
+            switch ($action) {
+                'r' { Copy-Item $file.FullName -Destination $oldFilePath -Force }
+                'k' { Write-Host "→ Kept old version." }
+                'm' { notepad $oldFilePath; notepad $file.FullName }
+            }
+        }
+    }
+
+    Remove-Item $tempExtractPath -Recurse -Force
+    Write-Host "`n✅ Update check complete."
+}
+
+# ───── Start CommanDOS ──────────────────────────────────────────────
+function Start-CommanDOS {
+    $mainScript = Join-Path $destPath "main.ps1"
+    if (Test-Path $mainScript) {
+        Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy Bypass", "-File `"$mainScript`"" -Verb RunAs
+    } else {
+        Write-Host "❌ main.ps1 not found in $destPath" -ForegroundColor Red
+    }
 }
 
 # ───── Uninstall ────────────────────────────────────────────────────
@@ -108,7 +166,10 @@ while ($true) {
         '1' { Install-Or-Update }
         '2' { Uninstall-CommanDOS }
         '3' { Show-Help }
-        '0' { break }
+        '4' { Run-Portable }
+        '5' { Check-For-Updates }
+        '6' { Start-CommanDOS }
+        '0' { Write-Host "`n👋 Exiting..."; Start-Sleep 1; exit }
     }
     Write-Host "`nPress any key to return to menu..." -ForegroundColor Gray
     [Console]::ReadKey($true) | Out-Null
