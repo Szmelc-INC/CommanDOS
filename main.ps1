@@ -1,3 +1,6 @@
+# Force UTF-8 output and wide-char support
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # ─── Config ────────────────────────────────────────────────────────
 $menuTitle = "- [CommanDOS] [v1.2]"
 $selectedIndex = 0
@@ -9,10 +12,12 @@ $logoFile = Join-Path $scriptDir "logo.txt"
 # ─── Load Logo (if exists) ─────────────────────────────────────────
 function Show-Logo {
     if (Test-Path $logoFile) {
-        $logo = Get-Content $logoFile
+        $logo = Get-Content $logoFile -Encoding UTF8
         foreach ($line in $logo) {
-            $pad = [Math]::Max(0, ([Console]::WindowWidth - $line.Length) / 2)
-            Write-Host ($line.PadLeft($line.Length + $pad)) -ForegroundColor DarkCyan
+            # Optional: center the line, accounting for wide chars
+            $rawLen = ($line | Measure-Object -Character).Characters
+            $pad = [Math]::Max(0, ([Console]::WindowWidth - $rawLen) / 2)
+            Write-Output (" " * $pad + $line)
         }
         Write-Host ""
     }
